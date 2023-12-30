@@ -165,11 +165,16 @@ func getClient() *polly.Client {
 }
 
 func toAnki(sentence Sentence) string {
-	return fmt.Sprintf("%s;%s;%s;%s;(add translation here)", sentence.textOriginal, sentence.textTransliterated, sentence.audioOriginal, sentence.audioReducedSpeed)
+	return fmt.Sprintf(
+		"%s;%s;%s;%s;(add translation here)",
+		sentence.textOriginal,
+		sentence.textTransliterated,
+		fmt.Sprintf("[sound:%s]", sentence.audioOriginal),
+		fmt.Sprintf("[sound:%s]", sentence.audioReducedSpeed))
 }
 
 func main() {
-	timestamp := time.Now().Format(time.RFC3339)
+	timestamp := fmt.Sprint(time.Now().Unix())
 	log.Printf("Starting program at %s\n", timestamp)
 
 	if len(os.Args) < 2 {
