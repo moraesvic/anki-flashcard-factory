@@ -42,6 +42,7 @@ func _changeAudioTempo(path string, tempo float64) string {
 	executable := "ffmpeg"
 	inputFile := fmt.Sprintf("file:%s", path)
 	atempo := fmt.Sprintf("atempo=%.2f", tempo)
+
 	// For quality, lower is better
 	_quality := 2
 	quality := fmt.Sprint(_quality)
@@ -101,7 +102,6 @@ func synthesizeSpeech(ch chan Sentence, sentence Sentence, client *polly.Client)
 	}
 
 	sentence.audioOriginal = audioOriginal
-	// fmt.Printf("Original audio extracted to %s\n", audioOriginal)
 	ch <- sentence
 }
 
@@ -136,7 +136,6 @@ func makeSentence(ch chan Sentence, timestamp string, index int, textOriginal st
 func getLines() []string {
 	filePath := os.Args[1]
 
-	// Open the file
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
@@ -147,7 +146,6 @@ func getLines() []string {
 	var lines []string
 	scanner := bufio.NewScanner(file)
 
-	// Read lines from the file and store them in the slice
 	for scanner.Scan() {
 		line := scanner.Text()
 		lines = append(lines, line)
@@ -178,10 +176,6 @@ func main() {
 	client := getClient()
 	lines := getLines()
 
-	// for idx, line := range lines {
-	// 	runLineSequential(timestamp, idx, &line, client)
-	// }
-
 	pipe1 := make(chan Sentence, len(lines))
 	pipe2 := make(chan Sentence, len(lines))
 	pipe3 := make(chan Sentence, len(lines))
@@ -206,6 +200,4 @@ func main() {
 	for range lines {
 		printSentence(<-pipe4)
 	}
-
-	// changeAudioTempo("hello.mp3", 0.75)
 }
