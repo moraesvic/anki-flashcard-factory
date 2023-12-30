@@ -1,13 +1,14 @@
 FROM golang:1.21-bookworm AS builder
 
 WORKDIR /build
-COPY ["src/main.go", "test/polly.mp3", "/build/"]
-RUN go build main.go
+COPY src /build
+RUN go build
 
-FROM alpine:3.19.0
+FROM debian:12.4-slim
 
 WORKDIR /app
-RUN apk update && apk add ffmpeg
-COPY --from=builder /build/* /app
+RUN apt-get update && apt-get install -y ffmpeg
+COPY --from=builder /build/* /app/
+RUN cp flashcard-factory /bin/
 
-CMD [ "./main" ]
+CMD [ "bash" ]

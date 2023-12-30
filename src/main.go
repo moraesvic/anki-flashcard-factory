@@ -113,13 +113,13 @@ type Sentence struct {
 	audioReducedSpeed  string
 }
 
-func printSentence(sentence Sentence) {
-	fmt.Printf("%-20s : %-20s\n", "ID", sentence.id)
-	fmt.Printf("%-20s : %-20s\n", "Original text", sentence.textOriginal)
-	fmt.Printf("%-20s : %-20s\n", "Transliterated text", sentence.textTransliterated)
-	fmt.Printf("%-20s : %-20s\n", "Original audio", sentence.audioOriginal)
-	fmt.Printf("%-20s : %-20s\n", "Reduced speed audio", sentence.audioReducedSpeed)
-	fmt.Println()
+func logSentence(sentence Sentence) {
+	log.Printf("%-20s : %-20s\n", "ID", sentence.id)
+	log.Printf("%-20s : %-20s\n", "Original text", sentence.textOriginal)
+	log.Printf("%-20s : %-20s\n", "Transliterated text", sentence.textTransliterated)
+	log.Printf("%-20s : %-20s\n", "Original audio", sentence.audioOriginal)
+	log.Printf("%-20s : %-20s\n", "Reduced speed audio", sentence.audioReducedSpeed)
+	log.Println()
 }
 
 func makeId(timestamp string, index int) string {
@@ -164,9 +164,13 @@ func getClient() *polly.Client {
 	return client
 }
 
+func toAnki(sentence Sentence) string {
+	return fmt.Sprintf("%s;%s;%s;%s;(add translation here)", sentence.textOriginal, sentence.textTransliterated, sentence.audioOriginal, sentence.audioReducedSpeed)
+}
+
 func main() {
 	timestamp := time.Now().Format(time.RFC3339)
-	fmt.Printf("Starting program at %s\n", timestamp)
+	log.Printf("Starting program at %s\n", timestamp)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run main.go <file_path>")
@@ -197,7 +201,17 @@ func main() {
 		go toPinyin(pipe4, <-pipe3)
 	}
 
+	var sentences []Sentence
+
 	for range lines {
-		printSentence(<-pipe4)
+		sentences = append(sentences, <-pipe4)
+	}
+
+	for _, sentence := range sentences {
+		logSentence(sentence)
+	}
+
+	for _, sentence := range sentences {
+		fmt.Println(toAnki(sentence))
 	}
 }
