@@ -18,7 +18,9 @@ import (
 )
 
 const (
-	TEMPO = 0.7
+	// avoid extreme parallelism?
+	CHANNEL_CAPACITY = 10
+	TEMPO            = 0.7
 )
 
 func _toPinyin(s string) string {
@@ -29,9 +31,8 @@ func _toPinyin(s string) string {
 	return strings.Join(result, " ")
 }
 
-func toPinyin(ch chan Sentence, sentence Sentence) {
+func toPinyin(sentence *Sentence) {
 	sentence.textTransliterated = _toPinyin(sentence.textOriginal)
-	ch <- sentence
 }
 
 func _changeAudioTempo(path string, tempo float64) string {
@@ -71,12 +72,11 @@ func _changeAudioTempo(path string, tempo float64) string {
 	return outputPath
 }
 
-func changeAudioTempo(ch chan Sentence, sentence Sentence) {
+func changeAudioTempo(sentence *Sentence) {
 	sentence.audioReducedSpeed = _changeAudioTempo(sentence.audioOriginal, TEMPO)
-	ch <- sentence
 }
 
-func synthesizeSpeech(ch chan Sentence, sentence Sentence, client *polly.Client) {
+func synthesizeSpeech(sentence *Sentence, client *polly.Client) {
 	params := &polly.SynthesizeSpeechInput{
 		Engine:       types.EngineNeural,
 		OutputFormat: types.OutputFormatMp3,
@@ -102,7 +102,6 @@ func synthesizeSpeech(ch chan Sentence, sentence Sentence, client *polly.Client)
 	}
 
 	sentence.audioOriginal = audioOriginal
-	ch <- sentence
 }
 
 type Sentence struct {
@@ -126,14 +125,15 @@ func makeId(timestamp string, index int) string {
 	return fmt.Sprintf("%s-%04d", timestamp, index)
 }
 
-func makeSentence(ch chan Sentence, timestamp string, index int, textOriginal string) {
+func makeSentence(timestamp string, index int, textOriginal string) Sentence {
 	sentence := Sentence{}
 	sentence.id = makeId(timestamp, index)
 	sentence.textOriginal = textOriginal
-	ch <- sentence
+
+	return sentence
 }
 
-func getLines() []string {
+func getLines(ch chan string) {
 	filePath := os.Args[1]
 
 	file, err := os.Open(filePath)
@@ -143,15 +143,14 @@ func getLines() []string {
 	}
 	defer file.Close()
 
-	var lines []string
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		lines = append(lines, line)
+		ch <- line
 	}
 
-	return lines
+	close(ch)
 }
 
 func getClient() *polly.Client {
@@ -183,40 +182,28 @@ func main() {
 	}
 
 	client := getClient()
-	lines := getLines()
 
-	pipe1 := make(chan Sentence, len(lines))
-	pipe2 := make(chan Sentence, len(lines))
-	pipe3 := make(chan Sentence, len(lines))
-	pipe4 := make(chan Sentence, len(lines))
+	input := make(chan string, CHANNEL_CAPACITY)
+	output := make(chan Sentence, CHANNEL_CAPACITY)
 
-	for index, text := range lines {
-		go makeSentence(pipe1, timestamp, index, text)
+	go getLines(input)
+
+	index := 0
+	for text := range input {
+		go func(text string, index int) {
+			sentence := makeSentence(timestamp, index, text)
+			synthesizeSpeech(&sentence, client)
+			changeAudioTempo(&sentence)
+			toPinyin(&sentence)
+			output <- sentence
+		}(text, index)
+
+		index++
 	}
 
-	for range lines {
-		go synthesizeSpeech(pipe2, <-pipe1, client)
-	}
-
-	for range lines {
-		go changeAudioTempo(pipe3, <-pipe2)
-	}
-
-	for range lines {
-		go toPinyin(pipe4, <-pipe3)
-	}
-
-	var sentences []Sentence
-
-	for range lines {
-		sentences = append(sentences, <-pipe4)
-	}
-
-	for _, sentence := range sentences {
+	for i := 0; i < index; i++ {
+		sentence := <-output
 		logSentence(sentence)
-	}
-
-	for _, sentence := range sentences {
 		fmt.Println(toAnki(sentence))
 	}
 }
