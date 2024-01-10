@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	// avoid extreme parallelism?
+	// avoid extreme parallelism
 	CHANNEL_CAPACITY = 10
 	TEMPO            = 0.7
 )
@@ -147,7 +147,14 @@ func getLines(ch chan string) {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		ch <- line
+		lineTrimmed := strings.TrimSpace(line)
+
+		if len(lineTrimmed) == 0 {
+			log.Println("Skipping empty line.")
+			continue
+		}
+
+		ch <- lineTrimmed
 	}
 
 	close(ch)
