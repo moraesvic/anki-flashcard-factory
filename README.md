@@ -2,7 +2,7 @@
 
 [Anki](https://apps.ankiweb.net/) is an excellent piece of software that helps you memorize any subject by use of SRS (Space Repetition System). I use it for learning languages and much more. Give it a try!
 
-When creating flashcards for studying Chinese in Anki, I wanted to add pinyin and audio along the original text and the translation. In addition to that, I wanted to create a slowed down version of the audio, since my listening skills are still poor. It turned out to be a good opportunity to get a taste of the Go language, also leveraging AWS Polly as a speech generator.
+When creating flashcards for studying Chinese in Anki, I wanted to add pinyin and audio along the original text and the translation. In addition to that, I wanted to create a slowed down version of the audio, since my listening skills are still poor. It turned out to be a good opportunity to get a taste of the Go language, also leveraging AWS Polly as a speech generator, and AWS Translate as a generator of stub translations.
 
 # How to use this
 
@@ -16,9 +16,10 @@ The program takes exactly one command line option, which is the path to a text f
 
 ```
 我说中文。
-她友两只猫。
-我主在巴西。
+她有两只猫。
+我住在巴西。
 这种药的作用是什么？
+觉
 ```
 
 Every line must contain a sentence in Mandarin Chinese. Empty lines will be ignored in this file. Comments or any other syntax is not supported.
@@ -32,36 +33,54 @@ flashcard-factory input.txt
 This is the expected output (processing occurs asynchronously and actual order of the output may differ):
 
 ```
-2024/01/10 15:47:26 Starting program at 1704912446
-2024/01/10 15:47:26 Skipping empty line.
-2024/01/10 15:47:27 ID                   : 1704912446-0001
-2024/01/10 15:47:27 Original text        : 她友两只猫。
-2024/01/10 15:47:27 Transliterated text  : tā yǒu liǎng zhǐ māo
-2024/01/10 15:47:27 Original audio       : 1704912446-0001.mp3
-2024/01/10 15:47:27 Reduced speed audio  : 1704912446-0001_atempo=0.70.mp3
-2024/01/10 15:47:27
-她友两只猫。;tā yǒu liǎng zhǐ māo;[sound:1704912446-0001.mp3];[sound:1704912446-0001_atempo=0.70.mp3];(add translation here)
-2024/01/10 15:47:27 ID                   : 1704912446-0002
-2024/01/10 15:47:27 Original text        : 我主在巴西。
-2024/01/10 15:47:27 Transliterated text  : wǒ zhǔ zài bā xī
-2024/01/10 15:47:27 Original audio       : 1704912446-0002.mp3
-2024/01/10 15:47:27 Reduced speed audio  : 1704912446-0002_atempo=0.70.mp3
-2024/01/10 15:47:27
-我主在巴西。;wǒ zhǔ zài bā xī;[sound:1704912446-0002.mp3];[sound:1704912446-0002_atempo=0.70.mp3];(add translation here)
-2024/01/10 15:47:27 ID                   : 1704912446-0000
-2024/01/10 15:47:27 Original text        : 我说中文。
-2024/01/10 15:47:27 Transliterated text  : wǒ shuō zhōng wén
-2024/01/10 15:47:27 Original audio       : 1704912446-0000.mp3
-2024/01/10 15:47:27 Reduced speed audio  : 1704912446-0000_atempo=0.70.mp3
-2024/01/10 15:47:27
-我说中文。;wǒ shuō zhōng wén;[sound:1704912446-0000.mp3];[sound:1704912446-0000_atempo=0.70.mp3];(add translation here)
-2024/01/10 15:47:27 ID                   : 1704912446-0003
-2024/01/10 15:47:27 Original text        : 这种药的作用是什么？
-2024/01/10 15:47:27 Transliterated text  : zhè zhǒng yào de zuò yòng shì shén me
-2024/01/10 15:47:27 Original audio       : 1704912446-0003.mp3
-2024/01/10 15:47:27 Reduced speed audio  : 1704912446-0003_atempo=0.70.mp3
-2024/01/10 15:47:27
-这种药的作用是什么？;zhè zhǒng yào de zuò yòng shì shén me;[sound:1704912446-0003.mp3];[sound:1704912446-0003_atempo=0.70.mp3];(add translation here)
+2024/01/28 20:44:08 Starting program...
+2024/01/28 20:44:08 Reading from file "sentences"
+2024/01/28 20:44:10
+ID                   : 1706485448439-0004
+Original text        : 觉
+Transliterated text  : jué, jiào
+Translated text      : Kyaw
+Original audio       : 1706485448439-0004.mp3
+Reduced speed audio  : 1706485448439-0004_atempo=0.70.mp3
+
+觉;jué, jiào;[sound:1706485448439-0004.mp3];[sound:1706485448439-0004_atempo=0.70.mp3];Kyaw
+2024/01/28 20:44:10
+ID                   : 1706485448439-0002
+Original text        : 我住在巴西。
+Transliterated text  : wǒ zhù zài bā xī .
+Translated text      : I live in Brazil.
+Original audio       : 1706485448439-0002.mp3
+Reduced speed audio  : 1706485448439-0002_atempo=0.70.mp3
+
+我住在巴西。;wǒ zhù zài bā xī .;[sound:1706485448439-0002.mp3];[sound:1706485448439-0002_atempo=0.70.mp3];I live in Brazil.
+2024/01/28 20:44:10
+ID                   : 1706485448439-0000
+Original text        : 我说中文。
+Transliterated text  : wǒ shuō zhōng wén .
+Translated text      : I speak Chinese.
+Original audio       : 1706485448439-0000.mp3
+Reduced speed audio  : 1706485448439-0000_atempo=0.70.mp3
+
+我说中文。;wǒ shuō zhōng wén .;[sound:1706485448439-0000.mp3];[sound:1706485448439-0000_atempo=0.70.mp3];I speak Chinese.
+2024/01/28 20:44:10
+ID                   : 1706485448439-0003
+Original text        : 这种药的作用是什么？
+Transliterated text  : zhè zhǒng yào de zuò yòng shì shén me ?
+Translated text      : What is the effect of this medicine?
+Original audio       : 1706485448439-0003.mp3
+Reduced speed audio  : 1706485448439-0003_atempo=0.70.mp3
+
+这种药的作用是什么？;zhè zhǒng yào de zuò yòng shì shén me ?;[sound:1706485448439-0003.mp3];[sound:1706485448439-0003_atempo=0.70.mp3];What is the effect of this medicine?
+2024/01/28 20:44:10
+ID                   : 1706485448439-0001
+Original text        : 她有两只猫。
+Transliterated text  : tā yǒu liǎng zhǐ māo .
+Translated text      : She has two cats.
+Original audio       : 1706485448439-0001.mp3
+Reduced speed audio  : 1706485448439-0001_atempo=0.70.mp3
+
+她有两只猫。;tā yǒu liǎng zhǐ māo .;[sound:1706485448439-0001.mp3];[sound:1706485448439-0001_atempo=0.70.mp3];She has two cats.
+2024/01/28 20:44:10 Processed 5 flashcards in 1.75 seconds (2.85 cards/s)
 ```
 
 The lines starting with a timestamp are for diagnostic purposes only. Usually, we are not interested in them. Since these are printed to stdout, you can get rid of them by invoking the program like this:
@@ -73,15 +92,18 @@ flashcard-factory input.txt 2> /dev/null
 Thus you will only get:
 
 ```
-我主在巴西。;wǒ zhǔ zài bā xī;[sound:1704912625-0002.mp3];[sound:1704912625-0002_atempo=0.70.mp3];(add translation here)
-我说中文。;wǒ shuō zhōng wén;[sound:1704912625-0000.mp3];[sound:1704912625-0000_atempo=0.70.mp3];(add translation here)
-她友两只猫。;tā yǒu liǎng zhǐ māo;[sound:1704912625-0001.mp3];[sound:1704912625-0001_atempo=0.70.mp3];(add translation here)
-这种药的作用是什么？;zhè zhǒng yào de zuò yòng shì shén me;[sound:1704912625-0003.mp3];[sound:1704912625-0003_atempo=0.70.mp3];(add translation here)
+觉;jué, jiào;[sound:1706485481408-0004.mp3];[sound:1706485481408-0004_atempo=0.70.mp3];Kyaw
+她有两只猫。;tā yǒu liǎng zhǐ māo .;[sound:1706485481408-0001.mp3];[sound:1706485481408-0001_atempo=0.70.mp3];She has two cats.
+我说中文。;wǒ shuō zhōng wén .;[sound:1706485481408-0000.mp3];[sound:1706485481408-0000_atempo=0.70.mp3];I speak Chinese.
+这种药的作用是什么？;zhè zhǒng yào de zuò yòng shì shén me ?;[sound:1706485481408-0003.mp3];[sound:1706485481408-0003_atempo=0.70.mp3];What is the effect of this medicine?
+我住在巴西。;wǒ zhù zài bā xī .;[sound:1706485481408-0002.mp3];[sound:1706485481408-0002_atempo=0.70.mp3];I live in Brazil.
 ```
 
 You will quickly notice that this is a CSV format using a semicolon as a delimiter. The columns correspond to a note type I created in Anki, receiving the original text, pinyin transcription, original audio, slowed down audio, and translation.
 
-The translation will have to be added by yourself.
+**Please note (1)**: If a line of input consists of only one Chinese character, the program will yield all the possible pinyin readings. If a line contains punctuation, the punctuation will be preserved in the pinyin output.
+
+**Please note (2)**: The generated pinyin and translation are the best guess that the tools can provide given an input with very little context. Please make sure to review them yourself before you add the flashcards to your library.
 
 By copying and pasting the CSV lines to a file and saving it, they can now be imported into Anki by going to `File > Import`.
 
@@ -89,14 +111,16 @@ You will also notice that media (MP3) files were generated:
 
 ```
 viih@viih-samsung:~/anki-flashcard-factory/src$ ls -1
-'1704912625-0000_atempo=0.70.mp3'
-1704912625-0000.mp3
-'1704912625-0001_atempo=0.70.mp3'
-1704912625-0001.mp3
-'1704912625-0002_atempo=0.70.mp3'
-1704912625-0002.mp3
-'1704912625-0003_atempo=0.70.mp3'
-1704912625-0003.mp3
+'1706485481408-0000_atempo=0.70.mp3'
+1706485481408-0000.mp3
+'1706485481408-0001_atempo=0.70.mp3'
+1706485481408-0001.mp3
+'1706485481408-0002_atempo=0.70.mp3'
+1706485481408-0002.mp3
+'1706485481408-0003_atempo=0.70.mp3'
+1706485481408-0003.mp3
+'1706485481408-0004_atempo=0.70.mp3'
+1706485481408-0004.mp3
 ```
 
 These must be copied into your Anki's media folder. Please consult the Anki manual in case of questions.
@@ -135,3 +159,7 @@ SoX is not recommended, sounds bad even when you turn on the best quality:
 ```bash
 sox polly.mp3 -C 48.0 sox.mp3 tempo 0.75
 ```
+
+# TODO
+
+We still need to add tests. Most of the code is glue code calling external libraries and APIs, but there is a little bit of business logic that we would like to assure is doing the right thing.
