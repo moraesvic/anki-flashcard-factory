@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/polly"
 	"github.com/aws/aws-sdk-go-v2/service/translate"
 	"github.com/moraesvic/anki-flashcard-factory/aws"
-	"github.com/mozillazg/go-pinyin"
+	"github.com/moraesvic/anki-flashcard-factory/pinyin"
 )
 
 type Sentence struct {
@@ -87,16 +87,8 @@ func (s *Sentence) ToAnkiFlashcard() {
 		translation)
 }
 
-func toPinyin(s string) string {
-	pinyinArgs := pinyin.NewArgs()
-	pinyinArgs.Style = pinyin.Tone
-
-	result := pinyin.LazyPinyin(s, pinyinArgs)
-	return strings.Join(result, " ")
-}
-
 func (s *Sentence) ToPinyin() {
-	s.textTransliterated = toPinyin(s.textOriginal)
+	s.textTransliterated = pinyin.ToPinyin(s.textOriginal)
 }
 
 func (s *Sentence) ChangeAudioTempo() {
