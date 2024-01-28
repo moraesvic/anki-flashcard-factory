@@ -27,8 +27,21 @@ func _toPinyin(s string) string {
 	pinyinArgs := pinyin.NewArgs()
 	pinyinArgs.Style = pinyin.Tone
 
-	result := pinyin.LazyPinyin(s, pinyinArgs)
-	return strings.Join(result, " ")
+
+	result := []string {}
+
+	// If it is a single character, then we would like it to return all
+	// of its readings
+	if len([]rune(s)) == 1 {
+		_result := pinyin.Pinyin(s, pinyinArgs)
+		for _, arr := range _result {
+			result = append(result, arr[0])
+		}
+		return strings.Join(result, ", ")
+	} else {
+		result = pinyin.LazyPinyin(s, pinyinArgs)
+		return strings.Join(result, " ")
+	}
 }
 
 func toPinyin(sentence *Sentence) {
