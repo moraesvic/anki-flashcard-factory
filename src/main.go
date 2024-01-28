@@ -19,7 +19,7 @@ func main() {
 	start := time.Now().UnixMilli()
 	timestamp := fmt.Sprint(start)
 
-	log.Printf("Starting program at %s\n", timestamp)
+	log.Println("Starting program...")
 
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run main.go <file_path>")
