@@ -105,7 +105,9 @@ These must be copied into your Anki's media folder. Please consult the Anki manu
 
 When all of this is done, you can see (and hear!) your new flashcards in Anki:
 
-![End result](/end-result.png)
+![Illustration of the final result (1)](/demo-1.png)
+
+![Illustration of the final result (2)](/demo-2.png)
 
 # Docker
 
