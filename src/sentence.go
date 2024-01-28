@@ -8,8 +8,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/polly"
 	"github.com/aws/aws-sdk-go-v2/service/translate"
-	"github.com/moraesvic/anki-flashcard-factory/aws"
-	"github.com/moraesvic/anki-flashcard-factory/pinyin"
+	"github.com/moraesvic/flashcard-factory/aws"
+	"github.com/moraesvic/flashcard-factory/pinyin"
 )
 
 type Sentence struct {

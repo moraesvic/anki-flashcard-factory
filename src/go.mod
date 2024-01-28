@@ -1,4 +1,4 @@
-module github.com/moraesvic/anki-flashcard-factory
+module github.com/moraesvic/flashcard-factory
 
 go 1.21
 

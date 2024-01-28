@@ -6,9 +6,9 @@ When creating flashcards for studying Chinese in Anki, I wanted to add pinyin an
 
 # How to use this
 
-First, you must have AWS credentials that allow you to invoke Polly's `SynthesizeSpeech` API. Enable these credentials using `aws configure` before running the program.
+First, you must have AWS credentials that allow you to invoke Polly's `SynthesizeSpeech` API, as well as AWS Translate's `TranslateDocument` API. Enable these credentials using `aws configure` before running the program.
 
-Second, the program can be run with `go run main.go <FILENAME>` or by generating a binary with `go build main.go` and then running `./flashcard-factory <FILENAME>`. The binary `flashcard-factory` can be copied into the user's `bin` folder for ease of use.
+Second, the program can be run with `go run main.go <FILENAME>` or by generating a binary with `go build main.go` and then running `./flashcard-factory <FILENAME>`. The binary `flashcard-factory` can be copied into a folder in the user's `PATH` for ease of use.
 
 ## Expected input
 
@@ -110,7 +110,7 @@ By copying and pasting the CSV lines to a file and saving it, they can now be im
 You will also notice that media (MP3) files were generated:
 
 ```
-viih@viih-samsung:~/anki-flashcard-factory/src$ ls -1
+viih@viih-samsung:~/flashcard-factory/src$ ls -1
 '1706485481408-0000_atempo=0.70.mp3'
 1706485481408-0000.mp3
 '1706485481408-0001_atempo=0.70.mp3'

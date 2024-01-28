@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/moraesvic/anki-flashcard-factory/aws"
-	"github.com/moraesvic/anki-flashcard-factory/input"
+	"github.com/moraesvic/flashcard-factory/aws"
+	"github.com/moraesvic/flashcard-factory/input"
 )
 
 const (
