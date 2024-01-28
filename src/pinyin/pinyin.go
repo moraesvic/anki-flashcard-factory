@@ -17,6 +17,7 @@ func convertCJKToWesternPunctuation(s string) string {
 		'。': '.',
 		'（': '(',
 		'）': ')',
+		'：': ':',
 	}
 	output := []rune{}
 
