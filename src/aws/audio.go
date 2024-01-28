@@ -64,7 +64,7 @@ func SynthesizeSpeech(client *polly.Client, input string) []byte {
 
 	res, err := client.SynthesizeSpeech(context.TODO(), params)
 	if err != nil {
-		if strings.Contains(err.Error(), "ThrottlingException") {
+		if strings.Contains(err.Error(), "rate limit") || strings.Contains(err.Error(), "ThrottlingException") {
 			log.Printf("AWS Polly returned ThrottlingException, sleeping for %d seconds...", AWS_THROTTLING_TIMEOUT_SECONDS)
 			time.Sleep(time.Second * AWS_THROTTLING_TIMEOUT_SECONDS)
 			return SynthesizeSpeech(client, input)
