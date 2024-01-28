@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/polly"
 	"github.com/aws/aws-sdk-go-v2/service/translate"
-	"github.com/moraesvic/anki-flashcard-factory/audio"
+	"github.com/moraesvic/anki-flashcard-factory/aws"
 	"github.com/mozillazg/go-pinyin"
 )
 
@@ -40,9 +40,11 @@ func CreateSentence(timestamp string, index int, textOriginal string) Sentence {
 func (s Sentence) ToString() string {
 	var sb strings.Builder
 
+	sb.WriteString("\n")
 	sb.WriteString(fmt.Sprintf("%-20s : %-20s\n", "ID", s.id))
 	sb.WriteString(fmt.Sprintf("%-20s : %-20s\n", "Original text", s.textOriginal))
 	sb.WriteString(fmt.Sprintf("%-20s : %-20s\n", "Transliterated text", s.textTransliterated))
+	sb.WriteString(fmt.Sprintf("%-20s : %-20s\n", "Translated text", s.textTranslated))
 	sb.WriteString(fmt.Sprintf("%-20s : %-20s\n", "Original audio", s.audioOriginalFile))
 	sb.WriteString(fmt.Sprintf("%-20s : %-20s\n", "Reduced speed audio", s.audioReducedSpeedFile))
 
@@ -50,19 +52,17 @@ func (s Sentence) ToString() string {
 }
 
 func (s *Sentence) SynthesizeSpeech(client *polly.Client) {
-	s.audioOriginalBytes = audio.SynthesizeSpeech(client, s.textOriginal)
+	s.audioOriginalBytes = aws.SynthesizeSpeech(client, s.textOriginal)
 	s.audioOriginalFile = fmt.Sprintf("%s.mp3", s.id)
 
 	err := os.WriteFile(s.audioOriginalFile, s.audioOriginalBytes, 0644)
 	if err != nil {
 		panic(fmt.Sprintf("Error writing audio data to file: %s", err))
 	}
-
-	log.Printf("Wrote to file %s", s.audioOriginalFile)
 }
 
 func (s *Sentence) Translate(client *translate.Client) {
-	s.textTranslated = audio.Translate(client, s.textOriginal)
+	s.textTranslated = aws.Translate(client, s.textOriginal)
 }
 
 func (s Sentence) Log() {
@@ -100,5 +100,13 @@ func (s *Sentence) ToPinyin() {
 }
 
 func (s *Sentence) ChangeAudioTempo() {
-	s.audioReducedSpeedFile = audio.ChangeAudioTempo(s.audioOriginalFile)
+	s.audioReducedSpeedFile = aws.ChangeAudioTempo(s.audioOriginalFile)
+}
+
+func (s *Sentence) Process(pollyClient *polly.Client, translateClient *translate.Client) {
+	s.SynthesizeSpeech(pollyClient)
+	s.ChangeAudioTempo()
+	s.ToPinyin()
+	s.Translate(translateClient)
+	s.ToAnkiFlashcard()
 }

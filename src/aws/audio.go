@@ -1,4 +1,4 @@
-package audio
+package aws
 
 import (
 	"context"
@@ -11,9 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/polly"
-	pollyTypes "github.com/aws/aws-sdk-go-v2/service/polly/types"
-	"github.com/aws/aws-sdk-go-v2/service/translate"
-	translateTypes "github.com/aws/aws-sdk-go-v2/service/translate/types"
+	"github.com/aws/aws-sdk-go-v2/service/polly/types"
 )
 
 const (
@@ -21,8 +19,6 @@ const (
 	QUALITY           float64 = 2
 	TEMPO                     = 0.7
 	FFMPEG_EXECUTABLE         = "ffmpeg"
-	// https://docs.aws.amazon.com/polly/latest/dg/limits.html
-	POLLY_THROTTLING_TIMEOUT_SECONDS = 2.0
 )
 
 func changeAudioTempo(inputFile string, outputFile string, atempo float64, quality float64) string {
@@ -60,17 +56,17 @@ func ChangeAudioTempo(inputFile string) string {
 
 func SynthesizeSpeech(client *polly.Client, input string) []byte {
 	params := &polly.SynthesizeSpeechInput{
-		Engine:       pollyTypes.EngineNeural,
-		OutputFormat: pollyTypes.OutputFormatMp3,
+		Engine:       types.EngineNeural,
+		OutputFormat: types.OutputFormatMp3,
 		Text:         &input,
-		VoiceId:      pollyTypes.VoiceIdZhiyu,
+		VoiceId:      types.VoiceIdZhiyu,
 	}
 
 	res, err := client.SynthesizeSpeech(context.TODO(), params)
 	if err != nil {
 		if strings.Contains(err.Error(), "ThrottlingException") {
-			log.Printf("AWS returned ThrottlingException, sleeping for %.1f seconds", POLLY_THROTTLING_TIMEOUT_SECONDS)
-			time.Sleep(time.Second * POLLY_THROTTLING_TIMEOUT_SECONDS)
+			log.Printf("AWS Polly returned ThrottlingException, sleeping for %d seconds...", AWS_THROTTLING_TIMEOUT_SECONDS)
+			time.Sleep(time.Second * AWS_THROTTLING_TIMEOUT_SECONDS)
 			return SynthesizeSpeech(client, input)
 		}
 
@@ -93,49 +89,4 @@ func GetPollyClient() *polly.Client {
 
 	client := polly.NewFromConfig(cfg)
 	return client
-}
-
-func GetTranslateClient() *translate.Client {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		panic("Cannot load AWS config!")
-	}
-
-	client := translate.NewFromConfig(cfg)
-	return client
-}
-
-func Translate(client *translate.Client, text string) string {
-	contentType := "text/plain"
-
-	document := translateTypes.Document{
-		Content:     []byte(text),
-		ContentType: &contentType,
-	}
-
-	// Note: for Chinese Traditional characters use "zh-TW"
-	// https://docs.aws.amazon.com/translate/latest/dg/what-is-languages.html
-	sourceLanguageCode := "zh"
-
-	targetLanguageCode := "en"
-
-	// Here you can add settings for Brevity, Formality and Profanity.
-	// We don't have any preference, so we will just leave it as is.
-	settings := translateTypes.TranslationSettings{}
-
-	input := translate.TranslateDocumentInput{
-		Document: &document,
-		// Note: for Chinese Traditional characters use zh-TW
-		SourceLanguageCode: &sourceLanguageCode,
-		TargetLanguageCode: &targetLanguageCode,
-		Settings:           &settings,
-	}
-
-	translatedDocument, err := client.TranslateDocument(context.TODO(), &input)
-
-	if err != nil {
-		log.Fatal("An error occurred translating the document: ", err)
-	}
-
-	return string(translatedDocument.TranslatedDocument.Content)
 }

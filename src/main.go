@@ -6,13 +6,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/moraesvic/anki-flashcard-factory/audio"
+	"github.com/moraesvic/anki-flashcard-factory/aws"
 	"github.com/moraesvic/anki-flashcard-factory/input"
 )
 
 const (
-	// avoid extreme parallelism
-	CHANNEL_CAPACITY = 8
+	// Avoid extreme parallelism, AWS Translate can be very sensitive to this
+	CHANNEL_CAPACITY = 5
 )
 
 func main() {
@@ -26,23 +26,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	pollyClient := audio.GetPollyClient()
-	translateClient := audio.GetTranslateClient()
+	inputFile := os.Args[1]
+	log.Printf("Reading from file \"%s\"", inputFile)
+
+	pollyClient := aws.GetPollyClient()
+	translateClient := aws.GetTranslateClient()
 
 	inputChannel := make(chan string, CHANNEL_CAPACITY)
 	outputChannel := make(chan Sentence, CHANNEL_CAPACITY)
 
-	go input.GetLines(os.Args[1], inputChannel)
+	go input.GetLines(inputFile, inputChannel)
 
 	index := 0
 	for text := range inputChannel {
 		go func(text string, index int) {
 			sentence := CreateSentence(timestamp, index, text)
-			sentence.SynthesizeSpeech(pollyClient)
-			sentence.ChangeAudioTempo()
-			sentence.ToPinyin()
-			sentence.Translate(translateClient)
-			sentence.ToAnkiFlashcard()
+			sentence.Process(pollyClient, translateClient)
 			outputChannel <- sentence
 		}(text, index)
 
@@ -57,6 +56,7 @@ func main() {
 
 	end := time.Now().UnixMilli()
 	ellapsedSeconds := (float64(end) - float64(start)) / 1000.0
+	averageProcessingTime := float64(index) / ellapsedSeconds
 
-	log.Printf("Processed %d flashcards in %.2f seconds", index, ellapsedSeconds)
+	log.Printf("Processed %d flashcards in %.2f seconds (%.2f cards/s)", index, ellapsedSeconds, averageProcessingTime)
 }
