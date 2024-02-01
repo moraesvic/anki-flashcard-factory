@@ -162,4 +162,13 @@ sox polly.mp3 -C 48.0 sox.mp3 tempo 0.75
 
 # TODO
 
+## Testing
+
 We still need to add tests. Most of the code is glue code calling external libraries and APIs, but there is a little bit of business logic that we would like to assure is doing the right thing.
+
+## New features
+
+- **Conversion to/from Traditional Chinese characters**: https://github.com/siongui/gojianfan
+- **Importing other formats than the plain text file, for example, CSV**: https://pkg.go.dev/encoding/csv
+- The feature above could be used to work with datasets from Tatoeba, for example
+- **Reading job specifications from a file, or from command line args**: https://pkg.go.dev/flag
