@@ -4,21 +4,44 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
+	"sync/atomic"
 	"time"
 
-	"github.com/moraesvic/flashcard-factory/aws"
 	"github.com/moraesvic/flashcard-factory/input"
 )
 
 const (
 	// Avoid extreme parallelism, AWS Translate can be very sensitive to this
-	CHANNEL_CAPACITY = 5
+	N_WORKERS = 5
 )
 
-func main() {
-	start := time.Now().UnixMilli()
-	timestamp := fmt.Sprint(start)
+var start int64
+var timestamp string
 
+func init() {
+	start = time.Now().UnixMilli()
+	timestamp = fmt.Sprint(start)
+}
+
+func Work(counter *atomic.Uint32, lines <-chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for {
+		line, ok := <-lines
+		if !ok {
+			return
+		}
+
+		index := counter.Add(1)
+		sentence := CreateSentence(timestamp, index, line)
+		sentence.Process()
+		sentence.Log()
+		fmt.Println(sentence.ankiFlashcard)
+	}
+}
+
+func main() {
 	log.Println("Starting program...")
 
 	if len(os.Args) < 2 {
@@ -29,34 +52,22 @@ func main() {
 	inputFile := os.Args[1]
 	log.Printf("Reading from file \"%s\"", inputFile)
 
-	pollyClient := aws.GetPollyClient()
-	translateClient := aws.GetTranslateClient()
+	lines := input.GetLines(inputFile)
 
-	inputChannel := make(chan string, CHANNEL_CAPACITY)
-	outputChannel := make(chan Sentence, CHANNEL_CAPACITY)
+	var wg sync.WaitGroup
 
-	go input.GetLines(inputFile, inputChannel)
-
-	index := 0
-	for text := range inputChannel {
-		go func(text string, index int) {
-			sentence := CreateSentence(timestamp, index, text)
-			sentence.Process(pollyClient, translateClient)
-			outputChannel <- sentence
-		}(text, index)
-
-		index++
+	var counter atomic.Uint32
+	for range N_WORKERS {
+		wg.Add(1)
+		go Work(&counter, lines, &wg)
 	}
 
-	for i := 0; i < index; i++ {
-		sentence := <-outputChannel
-		sentence.Log()
-		fmt.Println(sentence.ankiFlashcard)
-	}
+	wg.Wait()
+	finalCount := counter.Load()
 
 	end := time.Now().UnixMilli()
 	ellapsedSeconds := (float64(end) - float64(start)) / 1000.0
-	averageProcessingTime := float64(index) / ellapsedSeconds
+	averageProcessingTime := float64(finalCount) / ellapsedSeconds
 
-	log.Printf("Processed %d flashcards in %.2f seconds (%.2f cards/s)", index, ellapsedSeconds, averageProcessingTime)
+	log.Printf("Processed %d flashcards in %.2f seconds (%.2f cards/s)", finalCount, ellapsedSeconds, averageProcessingTime)
 }

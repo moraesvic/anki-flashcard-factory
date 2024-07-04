@@ -3,38 +3,48 @@ package input
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
 )
 
-func ScanLines(fp io.Reader, ch chan string) {
-	scanner := bufio.NewScanner(fp)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		lineTrimmed := strings.TrimSpace(line)
-
-		if len(lineTrimmed) == 0 {
-			log.Println("Skipping empty line.")
-			continue
-		}
-
-		ch <- lineTrimmed
-	}
-
-	close(ch)
-}
-
-func GetLines(file string, ch chan string) {
-	fp, err := os.Open(file)
-	defer fp.Close()
+func GetLines(filepath string) <-chan string {
+	ch := make(chan string)
+	fp, err := os.Open(filepath)
 
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		os.Exit(1)
 	}
 
-	ScanLines(fp, ch)
+	go func() {
+		defer close(ch)
+		defer fp.Close()
+
+		scanner := bufio.NewScanner(fp)
+
+		for {
+			result := scanner.Scan()
+			if !result {
+				err := scanner.Err()
+				if err != nil {
+					log.Println("An error occurred scanning the file.")
+					log.Println(err)
+				}
+				break
+			}
+
+			line := scanner.Text()
+			lineTrimmed := strings.TrimSpace(line)
+
+			if len(lineTrimmed) == 0 {
+				log.Println("Skipping empty line.")
+				continue
+			}
+
+			ch <- lineTrimmed
+		}
+	}()
+
+	return ch
 }

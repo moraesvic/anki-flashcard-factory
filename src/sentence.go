@@ -13,22 +13,29 @@ import (
 )
 
 type Sentence struct {
-	id                     string
-	textOriginal           string
-	textTransliterated     string
-	textTranslated         string
-	audioOriginalBytes     []byte
-	audioOriginalFile      string
-	audioReducedSpeedBytes []byte
-	audioReducedSpeedFile  string
-	ankiFlashcard          string
+	id                    string
+	textOriginal          string
+	textTransliterated    string
+	textTranslated        string
+	audioOriginalBytes    []byte
+	audioOriginalFile     string
+	audioReducedSpeedFile string
+	ankiFlashcard         string
 }
 
-func createSentenceId(timestamp string, index int) string {
+var pollyClient *polly.Client
+var translateClient *translate.Client
+
+func init() {
+	pollyClient = aws.GetPollyClient()
+	translateClient = aws.GetTranslateClient()
+}
+
+func createSentenceId(timestamp string, index uint32) string {
 	return fmt.Sprintf("%s-%04d", timestamp, index)
 }
 
-func CreateSentence(timestamp string, index int, textOriginal string) Sentence {
+func CreateSentence(timestamp string, index uint32, textOriginal string) Sentence {
 	sentence := Sentence{
 		id:           createSentenceId(timestamp, index),
 		textOriginal: textOriginal,
@@ -51,8 +58,8 @@ func (s Sentence) ToString() string {
 	return sb.String()
 }
 
-func (s *Sentence) SynthesizeSpeech(client *polly.Client) {
-	s.audioOriginalBytes = aws.SynthesizeSpeech(client, s.textOriginal)
+func (s *Sentence) SynthesizeSpeech() {
+	s.audioOriginalBytes = aws.SynthesizeSpeech(pollyClient, s.textOriginal)
 	s.audioOriginalFile = fmt.Sprintf("%s.mp3", s.id)
 
 	err := os.WriteFile(s.audioOriginalFile, s.audioOriginalBytes, 0644)
@@ -61,8 +68,8 @@ func (s *Sentence) SynthesizeSpeech(client *polly.Client) {
 	}
 }
 
-func (s *Sentence) Translate(client *translate.Client) {
-	s.textTranslated = aws.Translate(client, s.textOriginal)
+func (s *Sentence) Translate() {
+	s.textTranslated = aws.Translate(translateClient, s.textOriginal)
 }
 
 func (s Sentence) Log() {
@@ -95,10 +102,10 @@ func (s *Sentence) ChangeAudioTempo() {
 	s.audioReducedSpeedFile = aws.ChangeAudioTempo(s.audioOriginalFile)
 }
 
-func (s *Sentence) Process(pollyClient *polly.Client, translateClient *translate.Client) {
-	s.SynthesizeSpeech(pollyClient)
+func (s *Sentence) Process() {
+	s.SynthesizeSpeech()
 	s.ChangeAudioTempo()
 	s.ToPinyin()
-	s.Translate(translateClient)
+	s.Translate()
 	s.ToAnkiFlashcard()
 }
