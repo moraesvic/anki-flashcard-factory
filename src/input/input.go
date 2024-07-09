@@ -42,6 +42,11 @@ func GetLines(filepath string) <-chan string {
 				continue
 			}
 
+			if lineTrimmed[0] == '#' {
+				log.Println("Skipping commented line.")
+				continue
+			}
+
 			ch <- lineTrimmed
 		}
 	}()

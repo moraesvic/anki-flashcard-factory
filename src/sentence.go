@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/service/polly"
 	"github.com/aws/aws-sdk-go-v2/service/translate"
@@ -103,9 +104,26 @@ func (s *Sentence) ChangeAudioTempo() {
 }
 
 func (s *Sentence) Process() {
-	s.SynthesizeSpeech()
-	s.ChangeAudioTempo()
-	s.ToPinyin()
-	s.Translate()
+	var wg sync.WaitGroup
+
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+		s.SynthesizeSpeech()
+		s.ChangeAudioTempo()
+	}()
+
+	go func() {
+		defer wg.Done()
+		s.Translate()
+	}()
+
+	go func() {
+		defer wg.Done()
+		s.ToPinyin()
+	}()
+
+	wg.Wait()
 	s.ToAnkiFlashcard()
 }
