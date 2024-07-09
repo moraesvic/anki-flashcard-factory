@@ -18,7 +18,6 @@ type Sentence struct {
 	textOriginal          string
 	textTransliterated    string
 	textTranslated        string
-	audioOriginalBytes    []byte
 	audioOriginalFile     string
 	audioReducedSpeedFile string
 	ankiFlashcard         string
@@ -60,10 +59,10 @@ func (s Sentence) ToString() string {
 }
 
 func (s *Sentence) SynthesizeSpeech() {
-	s.audioOriginalBytes = aws.SynthesizeSpeech(pollyClient, s.textOriginal)
+	audioOriginalBytes := aws.SynthesizeSpeech(pollyClient, s.textOriginal)
 	s.audioOriginalFile = fmt.Sprintf("%s.mp3", s.id)
 
-	err := os.WriteFile(s.audioOriginalFile, s.audioOriginalBytes, 0644)
+	err := os.WriteFile(s.audioOriginalFile, audioOriginalBytes, 0644)
 	if err != nil {
 		panic(fmt.Sprintf("Error writing audio data to file: %s", err))
 	}
