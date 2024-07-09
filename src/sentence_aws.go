@@ -42,7 +42,7 @@ func (SentenceAWS) Translate(text string) string {
 }
 
 func (SentenceAWS) Pinyin(text string) string {
-	return pinyin.ToPinyin(text)
+	return pinyin.Pinyin(text)
 }
 
 func (SentenceAWS) ChangeAudioTempo(audioFile string) string {

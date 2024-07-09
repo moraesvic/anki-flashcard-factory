@@ -21,7 +21,7 @@ func convertCJKToWesternPunctuation(s string) string {
 	}
 	output := []rune{}
 
-	for _, r := range []rune(s) {
+	for _, r := range s {
 		westernPunctuation, ok := cjkPunctuationToWesternPunctuation[r]
 
 		if !ok {
@@ -45,7 +45,7 @@ func convertMultiCharacterString(s string) string {
 
 	inputWesternized := convertCJKToWesternPunctuation(s)
 
-	for _, r := range []rune(inputWesternized) {
+	for _, r := range inputWesternized {
 		if unicode.Is(unicode.Han, r) {
 			output = append(output, result[i])
 			output = append(output, " ")
@@ -68,7 +68,7 @@ func convertSingleCharacterString(s string) string {
 	return strings.Join(result, ", ")
 }
 
-func ToPinyin(s string) string {
+func Pinyin(s string) string {
 	if len([]rune(s)) > 1 {
 		return convertMultiCharacterString(s)
 	} else {
