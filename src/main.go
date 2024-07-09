@@ -12,8 +12,18 @@ import (
 )
 
 const (
-	// Avoid extreme parallelism, AWS Translate can be very sensitive to this
+	/*
+	 Avoid extreme parallelism, AWS services can be very sensitive to this.
+
+	 https://docs.aws.amazon.com/translate/latest/dg/what-is-limits.html#limits
+	 https://docs.aws.amazon.com/polly/latest/dg/limits.html#limits-throttle
+	*/
 	N_WORKERS = 5
+	/*
+	 In the future we may want to use other back ends that could theoretically
+	 provided better audio synthesis, translation etc.
+	*/
+	BACKEND = "aws"
 )
 
 var start int64
@@ -21,28 +31,11 @@ var timestamp string
 
 func init() {
 	start = time.Now().UnixMilli()
-	timestamp = fmt.Sprint(start)
-}
-
-func Work(counter *atomic.Uint32, lines <-chan string, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	for {
-		line, ok := <-lines
-		if !ok {
-			return
-		}
-
-		index := counter.Add(1)
-		sentence := CreateSentence(timestamp, index, line)
-		sentence.Process()
-		sentence.Log()
-		fmt.Println(sentence.ankiFlashcard)
-	}
+	timestamp = time.UnixMilli(start).UTC().Format(time.RFC3339)
 }
 
 func main() {
-	log.Println("Starting program...")
+	log.Printf("Starting program with up to %d workers...", N_WORKERS)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run main.go <file_path>")
@@ -59,14 +52,31 @@ func main() {
 	var counter atomic.Uint32
 	for range N_WORKERS {
 		wg.Add(1)
-		go Work(&counter, lines, &wg)
+	}
+
+	for range N_WORKERS {
+		go func() {
+			defer wg.Done()
+
+			for {
+				line, ok := <-lines
+				if !ok {
+					return
+				}
+
+				index := counter.Add(1)
+				sentence := Sentence{}.New(timestamp, index, line)
+				flashcard := sentence.Flashcard(BACKEND)
+				fmt.Println(AnkiString(flashcard))
+			}
+		}()
 	}
 
 	wg.Wait()
 	finalCount := counter.Load()
 
 	end := time.Now().UnixMilli()
-	ellapsedSeconds := (float64(end) - float64(start)) / 1000.0
+	ellapsedSeconds := (float64(end - start)) / 1000.0
 	averageProcessingTime := float64(finalCount) / ellapsedSeconds
 
 	log.Printf("Processed %d flashcards in %.2f seconds (%.2f cards/s)", finalCount, ellapsedSeconds, averageProcessingTime)
