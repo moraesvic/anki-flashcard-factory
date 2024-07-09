@@ -133,6 +133,21 @@ When all of this is done, you can see (and hear!) your new flashcards in Anki:
 
 ![Illustration of the final result (2)](/demo-2.png)
 
+# Testing the program
+
+The attached file `test_data.txt` contains 198 sentences in Chinese that can be used to test the correctness and performance of the program.
+
+# Task-level parallelization
+
+Testing with a large enough data set, task-level parallelization was able to improve processing times in about 17%:
+
+```
+# With task-level parallelization
+2024/07/09 13:59:16 Processed 198 flashcards in 22.35 seconds (8.86 cards/s)
+# Without task-level parallelization
+2024/07/09 14:01:26 Processed 198 flashcards in 26.21 seconds (7.56 cards/s)
+```
+
 # Docker
 
 It is possible, though not very convenient, to run the program from Docker. Build the Docker image and tag it (for example, with `flashcard-factory`). This is usually not worth the trouble, because Go can already generate a standalone executable, but may be a possibility if you don't have FFMPEG installed in your machine or have other compatibility problems.
@@ -151,6 +166,17 @@ Finally, you can invoke `flashcard-factory` as explained above.
 # Caveats
 
 One single Chinese character can have more than one reading depending on the context (for example, 了). The library we are using to do the pinyin transcription can offer all of the possibilities for transcription, but cannot pick the right one. For the sake of simplicity, we pick the most likely transcription, which can be easily edited in the import phase.
+
+## Punctuation
+
+This kind of output looks weird and should be fixed.
+
+```
+Original text        : 我不说英文，我只说汉语。
+Transliterated text  : wǒ bù shuō yīng wén ,wǒ zhǐ shuō hàn yǔ .
+```
+
+Punctuation should come right after the word, as usual:
 
 # Note on SoX vs. FFMPEG
 
