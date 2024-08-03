@@ -1,4 +1,4 @@
-// An implementation for ISentence using AWS Translate, AWS Polly and github.com/mozillazg/go-pinyin
+// An implementation for ISentence using AWS Translate, AWS Polly, github.com/mozillazg/go-pinyin, and github.com/moraesvic/shenme
 
 package main
 
@@ -10,9 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/translate"
 	"github.com/moraesvic/flashcard-factory/aws"
 	"github.com/moraesvic/flashcard-factory/pinyin"
+	"github.com/moraesvic/flashcard-factory/types"
 
-	shenmeLib "github.com/moraesvic/shenme/lib"
-	shenmeTypes "github.com/moraesvic/shenme/types"
+	shenme "github.com/moraesvic/shenme/lib"
 )
 
 type SentenceAWS struct {
@@ -52,6 +52,14 @@ func (SentenceAWS) ChangeAudioTempo(audioFile string) string {
 	return aws.ChangeAudioTempo(audioFile)
 }
 
-func (SentenceAWS) DefineHTML(traditional string) shenmeTypes.IDefinitionHTML {
-	return shenmeLib.Definer{}.DefineHTML(traditional)
+func (SentenceAWS) DefineHTML(traditional string) types.IDefinitionHTML {
+	return shenme.Definer{}.DefineHTML(traditional)
+}
+
+func (SentenceAWS) Traditional(simplified string) string {
+	return shenme.Traditional(simplified)
+}
+
+func (SentenceAWS) WikiURL(traditional string) string {
+	return shenme.WikiURL(traditional)
 }
