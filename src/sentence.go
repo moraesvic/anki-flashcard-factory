@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -71,6 +72,12 @@ type Flashcard interface {
 	Text() string
 }
 
+var cleanWikiURLRegexp *regexp.Regexp
+
+func init() {
+	cleanWikiURLRegexp = regexp.MustCompile(`\?action=raw$`)
+}
+
 func (s Sentence) Id() string {
 	return s.id
 }
@@ -127,15 +134,18 @@ func (ps PrintableSentence) String() string {
 }
 
 func (ps PrintableSentence) Anki() string {
-	return fmt.Sprintf(
-		"%s\t%s\t%s\t%s\t%s\t%s",
+	input := []string{
 		ps.text,
 		ps.transliteration,
 		fmt.Sprintf("[sound:%s]", ps.audioFile),
 		fmt.Sprintf("[sound:%s]", ps.reducedSpeedAudioFile),
 		ps.output(),
+		ps.traditional,
+		ps.wikiURL,
 		ps.kind,
-	)
+	}
+
+	return strings.Join(input, "\t")
 }
 
 const CJKPunctuation = "？！，、。（）：【】;"
@@ -148,6 +158,10 @@ func Kind(f Flashcard) string {
 	} else {
 		return "vocabulary"
 	}
+}
+
+func CleanWikiURL(wikiURL string) string {
+	return cleanWikiURLRegexp.ReplaceAllString(wikiURL, "#Chinese")
 }
 
 func AnkiString(f Flashcard) string {
@@ -180,7 +194,7 @@ func AnkiString(f Flashcard) string {
 				translation = "(add translation here)"
 			}
 		} else {
-			wikiURL = f.WikiURL(traditional)
+			wikiURL = CleanWikiURL(f.WikiURL(traditional))
 			definitions := f.DefineHTML(traditional)
 
 			if definitions.Length() == 0 {
