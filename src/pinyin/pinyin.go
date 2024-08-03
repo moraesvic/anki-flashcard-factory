@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	pinyinLib "github.com/mozillazg/go-pinyin"
+	gopinyin "github.com/mozillazg/go-pinyin"
 )
 
 // https://stackoverflow.com/questions/70971932/how-to-check-if-the-rune-is-chinese-punctuation-character-in-go
@@ -36,10 +36,10 @@ func convertCJKToWesternPunctuation(s string) string {
 }
 
 func convertMultiCharacterString(s string) string {
-	pinyinArgs := pinyinLib.NewArgs()
-	pinyinArgs.Style = pinyinLib.Tone
+	pinyinArgs := gopinyin.NewArgs()
+	pinyinArgs.Style = gopinyin.Tone
 
-	result := pinyinLib.LazyPinyin(s, pinyinArgs)
+	result := gopinyin.LazyPinyin(s, pinyinArgs)
 	output := []string{}
 	i := 0
 
@@ -60,11 +60,11 @@ func convertMultiCharacterString(s string) string {
 }
 
 func convertSingleCharacterString(s string) string {
-	pinyinArgs := pinyinLib.NewArgs()
-	pinyinArgs.Style = pinyinLib.Tone
+	pinyinArgs := gopinyin.NewArgs()
+	pinyinArgs.Style = gopinyin.Tone
 	pinyinArgs.Heteronym = true
 
-	result := pinyinLib.Pinyin(s, pinyinArgs)[0]
+	result := gopinyin.Pinyin(s, pinyinArgs)[0]
 	return strings.Join(result, ", ")
 }
 
