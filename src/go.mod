@@ -1,6 +1,6 @@
 module github.com/moraesvic/flashcard-factory
 
-go 1.22
+go 1.22.0
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.26.2
@@ -22,4 +22,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.26.6 // indirect
 	github.com/aws/smithy-go v1.19.0 // indirect
+	github.com/moraesvic/shenme v0.0.0-20240803140343-ed22210911b2 // indirect
+	github.com/siongui/gojianfan v0.0.0-20210926212422-2f175ac615de // indirect
 )

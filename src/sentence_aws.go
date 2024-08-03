@@ -10,6 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/translate"
 	"github.com/moraesvic/flashcard-factory/aws"
 	"github.com/moraesvic/flashcard-factory/pinyin"
+
+	shenmeLib "github.com/moraesvic/shenme/lib"
+	shenmeTypes "github.com/moraesvic/shenme/types"
 )
 
 type SentenceAWS struct {
@@ -47,4 +50,8 @@ func (SentenceAWS) Pinyin(text string) string {
 
 func (SentenceAWS) ChangeAudioTempo(audioFile string) string {
 	return aws.ChangeAudioTempo(audioFile)
+}
+
+func (SentenceAWS) DefineHTML(traditional string) shenmeTypes.IDefinitionHTML {
+	return shenmeLib.Definer{}.DefineHTML(traditional)
 }

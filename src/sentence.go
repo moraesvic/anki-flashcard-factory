@@ -5,6 +5,8 @@ import (
 	"log"
 	"strings"
 	"sync"
+
+	shenme "github.com/moraesvic/shenme/types"
 )
 
 type Sentence struct {
@@ -37,11 +39,16 @@ type IChangeAudioTempo interface {
 	ChangeAudioTempo(audioFile string) (reducedSpeedAudioFile string)
 }
 
+type IDefine interface {
+	shenme.IDefinerHTML
+}
+
 type Flashcard interface {
 	ISynthesizeSpeech
 	IChangeAudioTempo
 	ITranslate
 	IPinyin
+	IDefine
 	Id() string
 	Text() string
 }
