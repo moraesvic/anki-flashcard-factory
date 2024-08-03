@@ -54,6 +54,10 @@ func main() {
 		wg.Add(1)
 	}
 
+	fmt.Println(`#separator:tab
+#html:true
+#tags column:6`)
+
 	for range N_WORKERS {
 		go func() {
 			defer wg.Done()

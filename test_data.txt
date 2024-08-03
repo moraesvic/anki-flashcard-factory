@@ -1,4 +1,6 @@
 # This file can be used to test the program.
+开始
+今天
 我没和她一块儿去
 你知道商场什么时候关门吗？
 它就在商场旁边

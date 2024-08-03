@@ -128,12 +128,13 @@ func (ps PrintableSentence) String() string {
 
 func (ps PrintableSentence) Anki() string {
 	return fmt.Sprintf(
-		"%s\t%s\t%s\t%s\t%s",
+		"%s\t%s\t%s\t%s\t%s\t%s",
 		ps.text,
 		ps.transliteration,
 		fmt.Sprintf("[sound:%s]", ps.audioFile),
 		fmt.Sprintf("[sound:%s]", ps.reducedSpeedAudioFile),
 		ps.output(),
+		ps.kind,
 	)
 }
 
